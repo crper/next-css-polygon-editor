@@ -1,0 +1,60 @@
+{
+  "name": "next-css-polygon-editor",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "ahooks": "^3.8.4",
+    "animejs": "^4.0.2",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.13",
+    "es-toolkit": "^1.36.0",
+    "lucide-react": "^0.506.0",
+    "mathjs": "^14.4.0",
+    "motion": "^12.9.4",
+    "next": "15.3.1",
+    "next-rspack": "^15.3.1",
+    "postcss": "^8.5.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hot-toast": "^2.5.2"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4.1.5",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1",
+    "prettier": "^3.5.3",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "tailwindcss": "^4.1.5",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.10.0",
+  "author": {
+    "name": "crper",
+    "email": "crper@outlook.com"
+  },
+  "license": "MIT",
+  "homepage": "https://crper.github.io/next-css-polygon-editor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crper/next-css-polygon-editor"
+  }
+}
