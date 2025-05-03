@@ -36,8 +36,6 @@
 
 https://github.com/user-attachments/assets/87d41b8b-c0c0-4a67-8950-9cb3c8709212
 
-
-
 ## 🔧 技术栈
 
 <table>
@@ -121,3 +119,9 @@ pnpm build
 ## 📄 许可证
 
 本项目采用 [MIT 许可证](LICENSE)。
+
+## 💖 支持项目
+
+如果这个项目对您有帮助，欢迎打赏支持作者继续开发和维护。
+
+访问 github page 的关于页面
