@@ -80,12 +80,12 @@ export function VertexSettings({
                     </span>
                     {active ? (
                       <Badge className="bg-blue-600/10 text-blue-700 dark:bg-blue-400/10 dark:text-blue-200">
-                        当前
+                        当前选中
                       </Badge>
                     ) : null}
                   </div>
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    对应画布上的 P{index + 1}
+                    对应画布中的 P{index + 1}
                   </p>
                 </div>
                 <Badge>
@@ -112,9 +112,9 @@ export function VertexSettings({
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
-          点击任意卡片即可与画布中的顶点高亮联动，表单修改会即时回填到画布。
+          点击任意卡片即可与画布中的顶点高亮联动，表单修改会立即同步到画布。
         </p>
-        <Button onClick={onResetPolygon}>重置多边形</Button>
+        <Button onClick={onResetPolygon}>重置为默认多边形</Button>
       </div>
     </div>
   );

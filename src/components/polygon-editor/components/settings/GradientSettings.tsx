@@ -46,6 +46,14 @@ function getGradientPreviewBackground(type: GradientSettingsValue['type'], color
     : `linear-gradient(135deg, ${previewColors})`;
 }
 
+function getDirectionFieldLabel(type: GradientSettingsValue['type']) {
+  return type === 'radial' ? '扩散方式' : '渐变方向';
+}
+
+function getDirectionSummaryLabel(type: GradientSettingsValue['type']) {
+  return type === 'radial' ? '扩散' : '方向';
+}
+
 function getDirectionLabel(type: GradientSettingsValue['type'], direction: string) {
   const matched = getDirectionOptions(type).find(option => option.value === direction);
   return matched?.label ?? '默认方向';
@@ -101,7 +109,7 @@ function GradientDirectionField({
 
   return (
     <div>
-      <Label>方向</Label>
+      <Label>{getDirectionFieldLabel(type)}</Label>
       <select
         className="surface-input"
         value={direction}
@@ -141,7 +149,7 @@ function ColorStopCard({
         className="px-2 py-1 text-xs"
         value={color}
         onChange={event => onChange(event.target.value)}
-        placeholder="#RRGGBB"
+        placeholder="例如 #6366f1 或 rgb(99, 102, 241)"
       />
     </div>
   );
@@ -158,7 +166,9 @@ function GradientSummary({ type, direction, colors }: GradientSettingsValue) {
         <p className="font-medium text-slate-700 dark:text-slate-200">
           {type === 'radial' ? '径向渐变' : '线性渐变'}
         </p>
-        <p>方向：{getDirectionLabel(type, direction)}</p>
+        <p>
+          {getDirectionSummaryLabel(type)}：{getDirectionLabel(type, direction)}
+        </p>
       </div>
     </div>
   );
@@ -188,13 +198,13 @@ export function GradientSettings({
         <div>
           <h4 className="text-sm font-medium">渐变背景</h4>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            没有背景图时可直接用渐变生成预览背景。
+            没有背景图时，预览与导出的 CSS 背景都会使用这里的渐变设置。
           </p>
         </div>
         <Switch
           checked={settings.enabled}
           onCheckedChange={checked => onSettingChange('enabled', checked)}
-          aria-label="切换渐变背景"
+          aria-label={settings.enabled ? '关闭渐变背景' : '启用渐变背景'}
         />
       </div>
 
@@ -208,7 +218,7 @@ export function GradientSettings({
             onChange={value => onSettingChange('direction', value)}
           />
           <div className="space-y-2">
-            <Label>颜色停靠点</Label>
+            <Label>渐变颜色</Label>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {settings.colors.map((color, index) => (
                 <ColorStopCard

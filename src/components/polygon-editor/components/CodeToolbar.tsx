@@ -53,17 +53,26 @@ export function CodeToolbar({ document }: CodeToolbarProps) {
 
   const copyToClipboard = useCallback(
     (value: string, currentType: CodeType) => {
-      navigator.clipboard.writeText(value).then(() => {
-        clearResetTimer();
-        setCopied(currentType);
-        toast.success(
-          currentType === 'polygon' ? 'polygon 值已复制到剪贴板' : 'CSS 代码已复制到剪贴板'
-        );
-        resetTimerRef.current = window.setTimeout(() => {
-          setCopied(null);
-          resetTimerRef.current = null;
-        }, 2000);
-      });
+      navigator.clipboard
+        .writeText(value)
+        .then(() => {
+          clearResetTimer();
+          setCopied(currentType);
+          toast.success(
+            currentType === 'polygon' ? 'polygon 值已复制到剪贴板' : 'CSS 示例已复制到剪贴板'
+          );
+          resetTimerRef.current = window.setTimeout(() => {
+            setCopied(null);
+            resetTimerRef.current = null;
+          }, 2000);
+        })
+        .catch(() => {
+          toast.error(
+            currentType === 'polygon'
+              ? '复制 polygon 值失败，请手动复制'
+              : '复制 CSS 示例失败，请手动复制'
+          );
+        });
     },
     [clearResetTimer]
   );
@@ -72,9 +81,9 @@ export function CodeToolbar({ document }: CodeToolbarProps) {
     <div className="space-y-4">
       <div className="surface-panel flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">复制代码</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">导出代码</h3>
           <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
-            默认推荐复制 polygon 值，需要完整示例时再切到 CSS。
+            默认推荐复制 polygon 值；需要完整样式时再切到 CSS 示例。
           </p>
         </div>
 
@@ -85,7 +94,7 @@ export function CodeToolbar({ document }: CodeToolbarProps) {
             onClick={() => copyToClipboard(polygonCode, 'polygon')}
           >
             {copied === 'polygon' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            复制 polygon
+            复制 polygon 值
           </Button>
           <Button
             size="sm"
@@ -94,7 +103,7 @@ export function CodeToolbar({ document }: CodeToolbarProps) {
             onClick={() => copyToClipboard(cssCode, 'css')}
           >
             {copied === 'css' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            复制 CSS
+            复制 CSS 示例
           </Button>
         </div>
       </div>
@@ -105,8 +114,8 @@ export function CodeToolbar({ document }: CodeToolbarProps) {
         className="w-full gap-0"
       >
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="polygon">查看 polygon 值</TabsTrigger>
-          <TabsTrigger value="css">查看 CSS 示例</TabsTrigger>
+          <TabsTrigger value="polygon">polygon 值</TabsTrigger>
+          <TabsTrigger value="css">CSS 示例</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -118,7 +127,7 @@ export function CodeToolbar({ document }: CodeToolbarProps) {
 
       <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
         {type === 'polygon'
-          ? '这是最适合直接粘贴到 clip-path 属性值中的结果。'
+          ? '这是可直接粘贴到 clip-path 属性值中的 polygon 值。'
           : '这是包含尺寸、clip-path 与背景的完整 CSS 示例。'}
       </p>
     </div>

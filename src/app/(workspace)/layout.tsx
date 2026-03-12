@@ -12,8 +12,8 @@ export default function WorkspaceLayout({ children }: Readonly<WorkspaceLayoutPr
   return (
     <div className="relative flex min-h-[100dvh] flex-col overflow-hidden">
       <header className="border-b border-black/5 bg-white/72 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/72">
-        <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-3 px-4 py-2.5 sm:px-5 lg:px-6">
+          <div className="flex min-w-0 items-center gap-2.5">
             <Link
               href="/"
               className={cn(
@@ -24,8 +24,8 @@ export default function WorkspaceLayout({ children }: Readonly<WorkspaceLayoutPr
               <ArrowLeft className="h-4 w-4" />
               返回首页
             </Link>
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/20">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/20">
                 <Scissors className="h-5 w-5" />
               </span>
               <div className="min-w-0">
@@ -56,7 +56,7 @@ export default function WorkspaceLayout({ children }: Readonly<WorkspaceLayoutPr
         </div>
       </header>
 
-      <main className="flex-1 min-h-0 overflow-hidden">{children}</main>
+      <main className="min-h-0 flex-1 overflow-hidden">{children}</main>
     </div>
   );
 }

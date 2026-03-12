@@ -12,13 +12,13 @@ export function BackgroundSettings({ backgroundImage, onChange }: BackgroundSett
   return (
     <div className="space-y-3">
       <div>
-        <h4 className="text-sm font-medium">背景设置</h4>
+        <h4 className="text-sm font-medium">背景图片</h4>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          支持任意图片 URL；为空时将优先使用当前渐变设置。
+          填写图片 URL 后，预览与导出的 CSS 背景都会优先使用图片；留空时会回退到渐变或默认背景。
         </p>
       </div>
       <div>
-        <Label>背景图片 URL</Label>
+        <Label>背景图 URL</Label>
         <Input
           type="text"
           placeholder="https://example.com/image.jpg"

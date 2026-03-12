@@ -179,7 +179,7 @@ export function PolygonCanvas({
       <div
         ref={canvasRef}
         className={clsx(
-          'group relative min-h-[420px] flex-1 overflow-hidden rounded-[26px] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(248,250,252,0.78))] shadow-[0_20px_50px_rgba(15,23,42,0.08)] transition-all duration-300 outline-none dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.78))]',
+          'group relative min-h-[420px] flex-1 overflow-hidden rounded-[24px] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(248,250,252,0.78))] shadow-[0_18px_42px_rgba(15,23,42,0.08)] transition-all duration-300 outline-none dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.78))]',
           'hover:border-blue-400/40 dark:hover:border-blue-400/30',
           stageClassName,
           isFullscreen ? 'fixed inset-0 z-50 min-h-screen rounded-none' : 'w-full'
@@ -194,10 +194,10 @@ export function PolygonCanvas({
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.14),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.14),transparent_55%)]" />
         <div className="canvas-grid absolute inset-0 opacity-80 dark:opacity-60" />
-        <div className="absolute inset-[10px] rounded-[20px] border border-white/70 shadow-inner dark:border-white/8" />
+        <div className="absolute inset-[10px] rounded-[18px] border border-white/70 shadow-inner dark:border-white/8" />
         <div className="pointer-events-none absolute inset-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-24px_50px_rgba(15,23,42,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03),inset_0_-24px_50px_rgba(2,6,23,0.34)]" />
 
-        <div className="absolute left-3 top-3 z-20 flex max-w-[calc(100%-5rem)] flex-wrap items-center gap-2">
+        <div className="absolute left-2.5 top-2.5 z-20 flex max-w-[calc(100%-4.75rem)] flex-wrap items-center gap-2">
           {activePointIndex !== null ? (
             <>
               <Badge>已选中顶点 {activePointIndex + 1}</Badge>
@@ -206,7 +206,7 @@ export function PolygonCanvas({
                   event.stopPropagation();
                   onPointRemove(activePointIndex);
                 }}
-                className="surface-button-danger px-3 py-1.5"
+                className="surface-button-danger px-2.5 py-1.5"
               >
                 <Trash2 size={16} />
                 删除顶点
@@ -222,7 +222,7 @@ export function PolygonCanvas({
             event.stopPropagation();
             toggleFullscreen();
           }}
-          className="surface-button absolute right-3 top-3 z-20 rounded-full p-2"
+          className="surface-button absolute right-2.5 top-2.5 z-20 rounded-full p-2"
           aria-label={isFullscreen ? '退出全屏' : '进入全屏'}
           title={isFullscreen ? '退出全屏' : '进入全屏'}
         >
@@ -243,7 +243,7 @@ export function PolygonCanvas({
             point={point}
             index={index}
             isActive={activePointIndex === index}
-            showLabel={activePointIndex === index || points.length > 6}
+            showLabel={activePointIndex === index}
             onPointerDown={handleVertexPointerDown}
             onContextMenu={handlePointContextMenu}
           />

@@ -17,13 +17,13 @@ export function PolygonPreview({ document, clipPath, compact = false }: PolygonP
   const aspectRatio = `${previewSize.width} / ${previewSize.height}`;
 
   return (
-    <div className="relative flex flex-col items-center space-y-4">
-      <div className="flex w-full items-center justify-between gap-4">
+    <div className="relative flex flex-col items-center space-y-3">
+      <div className="flex w-full items-center justify-between gap-3">
         <div>
           <h3
             className={clsx(
               'font-semibold text-slate-950 dark:text-white',
-              compact ? 'text-base' : 'text-lg'
+              compact ? 'text-sm' : 'text-lg'
             )}
           >
             实时预览
@@ -34,7 +34,7 @@ export function PolygonPreview({ document, clipPath, compact = false }: PolygonP
               compact ? 'text-xs leading-5' : 'text-sm'
             )}
           >
-            这里展示当前 clip-path 与背景组合后的最终效果，并按真实比例缩放显示。
+            预览会按实际宽高比例显示 clip-path 和背景样式，方便对照最终效果。
           </p>
         </div>
         <Badge>
@@ -44,21 +44,21 @@ export function PolygonPreview({ document, clipPath, compact = false }: PolygonP
 
       <div
         className={clsx(
-          'surface-panel relative w-full overflow-hidden rounded-[28px]',
-          compact ? 'p-3' : 'p-4 sm:p-5'
+          'surface-panel relative w-full overflow-hidden rounded-[24px]',
+          compact ? 'p-2.5' : 'p-4 sm:p-5'
         )}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.12),transparent_58%)] dark:bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.12),transparent_58%)]" />
         <div className="canvas-grid absolute inset-0 opacity-70 dark:opacity-50" />
         <div
           className={clsx(
-            'relative flex items-center justify-center rounded-[24px] border border-black/5 bg-[linear-gradient(135deg,rgba(255,255,255,0.86),rgba(241,245,249,0.7))] shadow-inner dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.9),rgba(2,6,23,0.72))]',
-            compact ? 'min-h-[260px] p-4' : 'min-h-[320px] p-6'
+            'relative flex items-center justify-center rounded-[20px] border border-black/5 bg-[linear-gradient(135deg,rgba(255,255,255,0.86),rgba(241,245,249,0.7))] shadow-inner dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.9),rgba(2,6,23,0.72))]',
+            compact ? 'min-h-[220px] p-3' : 'min-h-[320px] p-6'
           )}
         >
           <div className="flex w-full items-center justify-center">
             <div
-              className="relative w-full max-w-[min(100%,360px)] overflow-hidden rounded-[22px] border border-white/70 shadow-[0_24px_60px_rgba(15,23,42,0.12)] dark:border-white/12 dark:shadow-[0_24px_60px_rgba(2,6,23,0.45)]"
+              className="relative w-full max-w-[min(100%,360px)] overflow-hidden rounded-[18px] border border-white/70 shadow-[0_20px_44px_rgba(15,23,42,0.12)] dark:border-white/12 dark:shadow-[0_20px_44px_rgba(2,6,23,0.42)]"
               style={{ aspectRatio }}
             >
               <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.2),transparent_42%)] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_42%)]" />

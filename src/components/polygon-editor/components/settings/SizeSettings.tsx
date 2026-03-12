@@ -18,8 +18,8 @@ export function SizeSettings({ width, height, onChange }: SizeSettingsProps) {
     <div>
       <div className="mb-3 flex items-center justify-between gap-3">
         <h4 className="text-sm font-medium">预览尺寸</h4>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          预览区域会按真实比例缩放展示，不再强行压成狭长卡片。
+        <p className="max-w-[16rem] text-right text-xs leading-5 text-slate-500 dark:text-slate-400">
+          输入宽高后，预览会立即更新。支持 50–1000 px。
         </p>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
