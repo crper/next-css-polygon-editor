@@ -1,51 +1,98 @@
 'use client';
 
-import { Point } from '@/hooks/usePolygon';
-import { MouseEvent } from 'react';
+import { getPointFromRect, type Point } from '@/components/polygon-editor/lib';
+import type { MouseEvent } from 'react';
 
-/**
- * 多边形边线组件属性
- */
 export interface PolygonEdgeProps {
   start: Point;
   end: Point;
   index: number;
-  onEdgeClick?: (e: MouseEvent<SVGLineElement>, edgeIndex: number, point: Point) => void;
+  onEdgeClick?: (event: MouseEvent<SVGLineElement>, edgeIndex: number, point: Point) => void;
 }
 
-/**
- * 多边形边线组件
- * 渲染多边形的边线，并处理边线点击事件
- */
 export function PolygonEdge({ start, end, index, onEdgeClick }: PolygonEdgeProps) {
-  // 处理边线点击事件
-  const handleEdgeClick = (e: MouseEvent<SVGLineElement>) => {
-    if (!onEdgeClick) return;
+  const handleEdgeClick = (event: MouseEvent<SVGElement>) => {
+    if (!onEdgeClick) {
+      return;
+    }
 
-    // 获取点击位置相对于SVG的坐标
-    const svg = e.currentTarget.ownerSVGElement;
-    if (!svg) return;
+    const svg = event.currentTarget.ownerSVGElement;
 
-    const rect = svg.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    if (!svg) {
+      return;
+    }
 
-    // 调用回调函数，传递边线索引和点击位置
-    onEdgeClick(e, index, { x, y });
+    const point = getPointFromRect(svg.getBoundingClientRect(), event.clientX, event.clientY);
+
+    onEdgeClick(event as MouseEvent<SVGLineElement>, index, point);
   };
 
+  const midX = (start.x + end.x) / 2;
+  const midY = (start.y + end.y) / 2;
+
   return (
-    <line
-      key={`edge-${index}`}
-      x1={`${start.x}%`}
-      y1={`${start.y}%`}
-      x2={`${end.x}%`}
-      y2={`${end.y}%`}
-      stroke="rgba(59, 130, 246, 0.3)"
-      strokeWidth="10"
-      strokeLinecap="round"
-      className="cursor-crosshair transition-all duration-200 hover:stroke-blue-300 hover:stroke-opacity-50"
-      onClick={handleEdgeClick}
-    />
+    <g className="group">
+      <line
+        x1={`${start.x}%`}
+        y1={`${start.y}%`}
+        x2={`${end.x}%`}
+        y2={`${end.y}%`}
+        stroke="var(--editor-edge-hit)"
+        strokeWidth="18"
+        strokeLinecap="round"
+        className="cursor-crosshair"
+        style={{ pointerEvents: 'stroke' }}
+        onClick={handleEdgeClick}
+      />
+      <line
+        x1={`${start.x}%`}
+        y1={`${start.y}%`}
+        x2={`${end.x}%`}
+        y2={`${end.y}%`}
+        stroke="var(--editor-edge)"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        className="pointer-events-none transition-all duration-200 group-hover:opacity-100"
+        opacity="0.7"
+      />
+      <g
+        className="cursor-crosshair opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+        onClick={handleEdgeClick}
+      >
+        <circle
+          cx={`${midX}%`}
+          cy={`${midY}%`}
+          r="9"
+          fill="rgba(255,255,255,0.92)"
+          className="dark:fill-slate-950/90"
+        />
+        <circle
+          cx={`${midX}%`}
+          cy={`${midY}%`}
+          r="8"
+          fill="none"
+          stroke="var(--editor-edge)"
+          strokeWidth="1.5"
+        />
+        <line
+          x1={`${midX}%`}
+          y1={`${midY - 1.6}%`}
+          x2={`${midX}%`}
+          y2={`${midY + 1.6}%`}
+          stroke="var(--editor-edge-hover)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <line
+          x1={`${midX - 1.6}%`}
+          y1={`${midY}%`}
+          x2={`${midX + 1.6}%`}
+          y2={`${midY}%`}
+          stroke="var(--editor-edge-hover)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </g>
+    </g>
   );
 }

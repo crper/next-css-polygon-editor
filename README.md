@@ -1,127 +1,108 @@
-# CSS多边形编辑器
+# CSS 多边形编辑器
 
-<div align="center">
+一个面向前端开发与视觉调试场景的 `clip-path: polygon()` 可视化编辑工具。
 
-![GitHub stars](https://img.shields.io/github/stars/crper/next-css-polygon-editor?style=flat-square)
-![GitHub forks](https://img.shields.io/github/forks/crper/next-css-polygon-editor?style=flat-square)
-![GitHub issues](https://img.shields.io/github/issues/crper/next-css-polygon-editor?style=flat-square)
-![GitHub license](https://img.shields.io/github/license/crper/next-css-polygon-editor?style=flat-square)
-![GitHub last commit](https://img.shields.io/github/last-commit/crper/next-css-polygon-editor?style=flat-square)
-![Next.js](https://img.shields.io/badge/Next.js-15.3.1-blue?style=flat-square)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square)
-![React](https://img.shields.io/badge/React-19-blue?style=flat-square)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1-blue?style=flat-square)
+它不是一个庞杂的图形系统，而是一个更专注的工具型项目：进入画布、调整顶点、确认预览、复制代码。
 
-</div>
+## Features
 
-<p align="center">一款直观的CSS clip-path多边形编辑工具，帮助您轻松创建和编辑复杂的多边形形状。</p>
+- 可视化拖拽 polygon 顶点
+- 点击边线 / 中点插入新顶点
+- 选中顶点后支持删除与键盘微调
+- 实时预览 `clip-path` + 背景图 / 渐变组合效果
+- 一键复制 `polygon(...)` 或完整 CSS 示例
+- 独立 editor workspace：中央大画布 + 单一 inspector panel
+- Desktop / Mobile 共享同一套 IA，移动端改为底部单一 panel
+- 支持浅色 / 深色主题切换
+- 支持 GitHub Pages 静态导出部署
 
-## 🎯 功能特色
+## Project Structure
 
-### 基础功能
-
-- ✏️ 可视化编辑多边形顶点，所见即所得
-- 🔄 实时预览多边形效果
-- 📋 自动生成CSS clip-path代码
-- 📱 响应式设计，适配不同设备
-- 🎨 支持自定义背景图片和预览尺寸
-
-### 使用方式
-
-- 🖱️ 拖拽顶点 - 直观调整多边形形状
-- 📝 复制代码 - 一键复制生成的CSS代码
-- 🔍 实时预览 - 即时查看效果
-
-### Demo演示
-
-https://github.com/user-attachments/assets/87d41b8b-c0c0-4a67-8950-9cb3c8709212
-
-## 🔧 技术栈
-
-<table>
-<tr>
-<td align="center">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nextjs/nextjs-original.svg" width="40" height="40"/><br />
-Next.js 15.3
-</td>
-<td align="center">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg" width="40" height="40"/><br />
-React 19
-</td>
-<td align="center">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/typescript/typescript-original.svg" width="40" height="40"/><br />
-TypeScript
-</td>
-<td align="center">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/tailwindcss/tailwindcss-original.svg" width="40" height="40"/><br />
-Tailwind CSS 4.1
-</td>
-</tr>
-</table>
-
-## 📁 项目结构
-
-```
-.
-├── src/
-│   ├── app/               # 应用路由
-│   │   ├── page.tsx       # 首页
-│   │   ├── about/         # 关于页面
-│   │   └── layout.tsx     # 全局布局
-│   ├── components/        # 组件目录
-│   │   ├── ui/            # 通用UI组件
-│   │   └── polygon-editor/ # 多边形编辑器相关组件
-│   │       ├── components/    # 编辑器子组件
-│   │       │   ├── CodePreview.tsx   # 代码预览组件
-│   │       │   ├── ControlPanel.tsx  # 控制面板组件
-│   │       │   ├── PolygonCanvas.tsx # 多边形画布组件
-│   │       │   └── PolygonPreview.tsx # 多边形预览组件
-│   │       └── PolygonEditor.tsx     # 主编辑器组件
-│   ├── hooks/            # 自定义钩子
-│   │   └── usePolygon.ts # 多边形状态管理钩子
-│   └── utils/            # 全局工具函数
-├── public/               # 静态资源目录
-├── package.json          # 依赖配置
-├── postcss.config.mjs    # PostCSS配置
-└── tsconfig.json         # TypeScript配置
+```text
+src/app/(site)              首页与 About 页面
+src/app/(workspace)/editor  独立编辑器工作区
+src/components/polygon-editor
+├── PolygonEditor.tsx       workspace 编排器
+├── components/             画布、预览、设置、导出 UI
+└── lib/                    polygon 领域逻辑与工具函数
+src/hooks/usePolygon.ts     编辑器状态与交互逻辑
 ```
 
-## 🚀 快速开始
+## Workspace IA
 
-### 安装依赖
+当前版本已经把“首页里的 editor”拆成独立工作区：
+
+- `/`：工具入口与项目简介
+- `/about`：项目说明、开源与支持信息
+- `/editor`：真正的 polygon workspace
+
+工作区设计目标：
+
+- 让画布成为主舞台
+- 让预览与代码退居辅助位置
+- 让设置中心收敛为单一 inspector
+
+## Tech Stack
+
+- Next.js 16
+- React 19
+- TypeScript 5.9
+- Tailwind CSS 4
+- next-themes
+- lucide-react
+- react-hot-toast
+- Vitest
+
+## Getting Started
+
+安装依赖：
 
 ```bash
 pnpm install
 ```
 
-### 开发模式
+启动开发环境：
 
 ```bash
 pnpm dev
 ```
 
-### 构建项目
+打开：
+
+```text
+http://localhost:3000/editor
+```
+
+## Development Commands
 
 ```bash
+pnpm lint
+pnpm typecheck
+pnpm test
 pnpm build
 ```
 
-## 📝 使用方法
+## Deployment
 
-1. 在画布上拖拽顶点调整多边形形状
-2. 实时查看预览效果
-3. 复制生成的CSS代码到您的项目中
+项目面向 GitHub Pages project site 部署，生产环境使用静态导出：
 
-## 🤝 贡献
+- `output: 'export'`
+- `basePath: '/next-css-polygon-editor'`
+- `assetPrefix: '${BASE_PATH}/'`
+- `images.unoptimized: true`
+- `trailingSlash: true`
 
-欢迎提交问题和贡献代码，请参阅 [贡献指南](.github/CONTRIBUTING.md)。
+由于 GitHub Pages 不是部署在站点根路径 `/` 下，静态资源统一通过 `src/lib/site.ts` 的 `withBasePath()` 生成 URL，避免 About 页图片与其他 public 资源在子路径部署时出现 404。
 
-## 📄 许可证
+## Notes
 
-本项目采用 [MIT 许可证](LICENSE)。
+如果你准备继续扩展这个项目，建议优先沿着下面方向做：
 
-## 💖 支持项目
+- 继续优化移动端触控体验
+- 为 inspector 增加更清晰的状态反馈
+- 增加导入 / 导出 preset 能力
+- 增加更强的历史记录与快捷键系统
 
-如果这个项目对您有帮助，欢迎打赏支持作者继续开发和维护。
+## License
 
-访问 github page 的关于页面
+MIT

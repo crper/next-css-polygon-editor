@@ -6,5 +6,4 @@ export * from './PolygonCanvas';
 export * from './render';
 
 // 配置组件
-export * from './ConfigAccordion';
 export * from './settings';

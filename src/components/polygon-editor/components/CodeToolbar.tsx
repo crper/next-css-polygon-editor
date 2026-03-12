@@ -1,160 +1,126 @@
 'use client';
 
-import { Point } from '@/hooks/usePolygon';
-import clsx from 'clsx';
+import type { EditorDocument } from '@/components/polygon-editor/lib';
+import { getBackgroundValue, serializeClipPath } from '@/components/polygon-editor/lib';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Check, Copy } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 
-/**
- * 代码工具栏组件属性
- */
 export interface CodeToolbarProps {
-  points: Point[];
-  gradient?: string;
-  previewSize: {
-    width: number;
-    height: number;
-  };
+  document: EditorDocument;
 }
 
-/**
- * 代码工具栏组件
- */
-export function CodeToolbar({ points, gradient = '', previewSize }: CodeToolbarProps) {
-  const [renderMode, setRenderMode] = useState<'svg' | 'css'>('css');
-  const [copied, setCopied] = useState(false);
+type CodeType = 'polygon' | 'css';
 
-  // 生成 SVG 代码
-  const generateSvgCode = useCallback(() => {
-    const svgWidth = previewSize.width;
-    const svgHeight = previewSize.height;
-    // SVG中不需要百分比，直接使用数字即可
-    const polygonPoints = points.map(p => `${p.x},${p.y}`).join(' ');
+function buildPolygonCode(document: EditorDocument) {
+  return serializeClipPath(document.points);
+}
 
-    let code = `<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <defs>`;
+function buildCssCode(document: EditorDocument) {
+  const clipPath = serializeClipPath(document.points);
+  const background = getBackgroundValue(document.backgroundImage, {
+    ...document.gradient,
+    enabled: document.gradient.enabled || document.backgroundImage.trim().length === 0,
+  });
 
-    if (gradient) {
-      // 解析渐变字符串
-      let colors = ['#6366f1', '#8b5cf6', '#d946ef'];
-
-      if (gradient.includes('linear-gradient')) {
-        // 处理完整的 linear-gradient 字符串
-        const match = gradient.match(/linear-gradient\([^,]*,\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/);
-        if (match && match.length >= 4) {
-          colors = [match[1].trim(), match[2].trim(), match[3].trim()];
-        }
-      } else if (gradient.includes(',')) {
-        // 处理纯色值列表
-        colors = gradient.split(',').map(c => c.trim());
-        // 确保至少有三种颜色
-        while (colors.length < 3) {
-          colors.push(colors[colors.length - 1] || '#d946ef');
-        }
-      }
-
-      code += `
-    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="${colors[0]}" />
-      <stop offset="50%" stop-color="${colors[1]}" />
-      <stop offset="100%" stop-color="${colors[2]}" />
-    </linearGradient>`;
-    }
-
-    code += `
-  </defs>
-  <polygon points="${polygonPoints}"
-           fill="${gradient ? 'url(#gradient)' : '#6366f1'}"
-           stroke="#3b82f6"
-           stroke-width="0.5" />
-</svg>`;
-
-    return code;
-  }, [points, gradient, previewSize]);
-
-  // 生成 CSS 代码
-  const generateCssCode = useCallback(() => {
-    const clipPathValue = `polygon(${points.map(p => `${p.x}% ${p.y}%`).join(', ')})`;
-
-    // 确保渐变值是有效的 CSS 渐变
-    let gradientValue = 'linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef)';
-    if (gradient) {
-      if (gradient.startsWith('linear-gradient')) {
-        gradientValue = gradient;
-      } else {
-        // 如果只提供了颜色，构造完整的渐变
-        const colors = gradient.split(',').map(c => c.trim());
-        gradientValue = `linear-gradient(135deg, ${colors.join(', ')})`;
-      }
-    }
-
-    // 生成 CSS 代码
-    return `.element {
-  width: ${previewSize.width}px;
-  height: ${previewSize.height}px;
-  clip-path: ${clipPathValue};
-  background: ${gradientValue};
+  return `.element {
+  width: ${document.previewSize.width}px;
+  height: ${document.previewSize.height}px;
+  clip-path: ${clipPath};
+  background: ${background};
 }`;
-  }, [points, gradient, previewSize]);
+}
 
-  // 复制代码到剪贴板
-  const copyToClipboard = useCallback((code: string) => {
-    navigator.clipboard.writeText(code).then(() => {
-      setCopied(true);
-      toast.success(`代码已复制到剪贴板`);
-      setTimeout(() => setCopied(false), 2000);
-    });
+export function CodeToolbar({ document }: CodeToolbarProps) {
+  const [type, setType] = useState<CodeType>('polygon');
+  const [copied, setCopied] = useState<CodeType | null>(null);
+  const resetTimerRef = useRef<number | null>(null);
+
+  const polygonCode = useMemo(() => buildPolygonCode(document), [document]);
+  const cssCode = useMemo(() => buildCssCode(document), [document]);
+  const code = type === 'polygon' ? polygonCode : cssCode;
+
+  const clearResetTimer = useCallback(() => {
+    if (resetTimerRef.current !== null) {
+      window.clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = null;
+    }
   }, []);
 
-  // 获取当前代码
-  const getCode = useCallback(() => {
-    return renderMode === 'css' ? generateCssCode() : generateSvgCode();
-  }, [renderMode, generateCssCode, generateSvgCode]);
+  useEffect(() => clearResetTimer, [clearResetTimer]);
+
+  const copyToClipboard = useCallback(
+    (value: string, currentType: CodeType) => {
+      navigator.clipboard.writeText(value).then(() => {
+        clearResetTimer();
+        setCopied(currentType);
+        toast.success(
+          currentType === 'polygon' ? 'polygon 值已复制到剪贴板' : 'CSS 代码已复制到剪贴板'
+        );
+        resetTimerRef.current = window.setTimeout(() => {
+          setCopied(null);
+          resetTimerRef.current = null;
+        }, 2000);
+      });
+    },
+    [clearResetTimer]
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="w-full">
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">代码格式</h3>
-          <div className="flex space-x-2">
-            <button
-              className={clsx(
-                'rounded-md px-3 py-1 text-sm transition-colors',
-                renderMode === 'css'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-              )}
-              onClick={() => setRenderMode('css')}
-            >
-              CSS
-            </button>
-            <button
-              className={clsx(
-                'rounded-md px-3 py-1 text-sm transition-colors',
-                renderMode === 'svg'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-              )}
-              onClick={() => setRenderMode('svg')}
-            >
-              SVG
-            </button>
-          </div>
+    <div className="space-y-4">
+      <div className="surface-panel flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">复制代码</h3>
+          <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
+            默认推荐复制 polygon 值，需要完整示例时再切到 CSS。
+          </p>
         </div>
 
-        <div className="relative">
-          <pre className="max-h-[300px] overflow-auto rounded-md bg-gray-800 p-4 text-sm text-white">
-            <code>{getCode()}</code>
-          </pre>
-          <button
-            className="absolute right-2 top-2 rounded-md bg-gray-700 p-2 text-white transition-colors hover:bg-gray-600"
-            onClick={() => copyToClipboard(getCode())}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            className="rounded-full px-4"
+            onClick={() => copyToClipboard(polygonCode, 'polygon')}
           >
-            {copied ? <Check size={16} /> : <Copy size={16} />}
-          </button>
+            {copied === 'polygon' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            复制 polygon
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full px-4"
+            onClick={() => copyToClipboard(cssCode, 'css')}
+          >
+            {copied === 'css' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            复制 CSS
+          </Button>
         </div>
       </div>
+
+      <Tabs
+        value={type}
+        onValueChange={value => setType(value as CodeType)}
+        className="w-full gap-0"
+      >
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="polygon">查看 polygon 值</TabsTrigger>
+          <TabsTrigger value="css">查看 CSS 示例</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      <div className="surface-code">
+        <pre className="max-h-[320px] overflow-auto p-4 text-sm text-white">
+          <code>{code}</code>
+        </pre>
+      </div>
+
+      <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
+        {type === 'polygon'
+          ? '这是最适合直接粘贴到 clip-path 属性值中的结果。'
+          : '这是包含尺寸、clip-path 与背景的完整 CSS 示例。'}
+      </p>
     </div>
   );
 }

@@ -1,179 +1,79 @@
 'use client';
 
-import { useState } from 'react';
-import toast from 'react-hot-toast';
+import type { EditorDocument } from '@/components/polygon-editor/lib';
+import { getBackgroundCss } from '@/components/polygon-editor/lib';
+import { Badge } from '@/components/ui/badge';
+import clsx from 'clsx';
 
-/**
- * 多边形预览组件属性
- */
 export interface PolygonPreviewProps {
+  document: EditorDocument;
   clipPath: string;
-  backgroundImage?: string;
-  width: number;
-  height: number;
-  gradient?: string;
-  previewMode?: 'div' | 'svg';
+  compact?: boolean;
 }
 
-/**
- * 多边形预览组件
- * 展示应用了clip-path的效果
- * 支持div和svg两种渲染模式
- */
-export function PolygonPreview({
-  clipPath,
-  backgroundImage = '',
-  width,
-  height,
-  gradient = '',
-  previewMode: initialMode = 'div',
-}: PolygonPreviewProps) {
-  // 预览模式状态（div或svg）
-  const [previewMode, setPreviewMode] = useState<'div' | 'svg'>(initialMode);
-
-  // 背景样式
-  const backgroundStyle = backgroundImage
-    ? {
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }
-    : gradient
-      ? { background: gradient }
-      : { background: 'linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef)' };
-
-  // 移除未使用的 extractPolygonPoints 函数
-
-  // 切换预览模式
-  const togglePreviewMode = () => {
-    setPreviewMode(prev => (prev === 'div' ? 'svg' : 'div'));
-    toast.success(`已切换到 ${previewMode === 'div' ? 'SVG' : 'DIV'} 模式`);
-  };
-
-  // 渲染SVG模式预览
-  const renderSvgPreview = () => {
-    // 从 clip-path 中提取点坐标
-    const pointsMatch = clipPath.match(/polygon\(([^)]+)\)/);
-    if (!pointsMatch) return <div>Invalid clip-path format</div>;
-
-    const pointsStr = pointsMatch[1];
-    const pointPairs = pointsStr.split(',').map(p => p.trim());
-
-    // 将百分比转换为实际的像素坐标
-    const svgPoints = pointPairs
-      .map(pair => {
-        const [x, y] = pair.split(' ');
-        // 将百分比转换为 0-100 范围内的数值
-        const xVal = parseFloat(x);
-        const yVal = parseFloat(y);
-        return `${xVal} ${yVal}`;
-      })
-      .join(' ');
-
-    // 生成渐变定义
-    let gradientColors = ['#6366f1', '#8b5cf6', '#d946ef'];
-
-    if (gradient) {
-      if (gradient.includes('linear-gradient')) {
-        // 处理完整的 linear-gradient 字符串
-        const match = gradient.match(/linear-gradient\([^,]*,\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/);
-        if (match && match.length >= 4) {
-          gradientColors = [match[1].trim(), match[2].trim(), match[3].trim()];
-        }
-      } else if (gradient.includes(',')) {
-        // 处理纯色值列表
-        gradientColors = gradient.split(',').map(c => c.trim());
-        // 确保至少有三种颜色
-        while (gradientColors.length < 3) {
-          gradientColors.push(gradientColors[gradientColors.length - 1] || '#d946ef');
-        }
-      }
-    }
-
-    const gradientDef = (
-      <defs>
-        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={gradientColors[0]} />
-          <stop offset="50%" stopColor={gradientColors[1]} />
-          <stop offset="100%" stopColor={gradientColors[2]} />
-        </linearGradient>
-      </defs>
-    );
-
-    // 创建图片ID（如果有背景图片）
-    const imageId = backgroundImage
-      ? `polygon-image-${Math.random().toString(36).substring(2, 9)}`
-      : '';
-
-    return (
-      <svg
-        width={width}
-        height={height}
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        className="w-full h-full"
-      >
-        {gradientDef}
-        {backgroundImage && (
-          <pattern id={imageId} patternUnits="userSpaceOnUse" width={width} height={height}>
-            <image
-              href={backgroundImage}
-              width={width}
-              height={height}
-              preserveAspectRatio="xMidYMid slice"
-            />
-          </pattern>
-        )}
-        <polygon
-          points={svgPoints}
-          fill={backgroundImage ? `url(#${imageId})` : `url(#gradient)`}
-          stroke="#3b82f6"
-          strokeWidth="0.5"
-        />
-      </svg>
-    );
-  };
-
-  // 渲染DIV模式预览
-  const renderDivPreview = () => {
-    return (
-      <div className="relative h-full w-full">
-        <div
-          className="absolute inset-0 z-10"
-          style={{
-            ...backgroundStyle,
-            clipPath,
-          }}
-        />
-      </div>
-    );
-  };
+export function PolygonPreview({ document, clipPath, compact = false }: PolygonPreviewProps) {
+  const { backgroundImage, gradient, previewSize } = document;
+  const backgroundStyle = getBackgroundCss(backgroundImage, gradient);
+  const aspectRatio = `${previewSize.width} / ${previewSize.height}`;
 
   return (
     <div className="relative flex flex-col items-center space-y-4">
-      {/* 标题和切换按钮 */}
-      <div className="flex w-full items-center justify-between">
-        <h3 className="text-lg font-semibold">实时预览</h3>
-        <button
-          onClick={togglePreviewMode}
-          className="rounded-md bg-blue-600 px-3 py-1 text-sm text-white shadow-md transition-colors hover:bg-blue-700"
-        >
-          切换到{previewMode === 'div' ? 'SVG' : 'DIV'}模式
-        </button>
+      <div className="flex w-full items-center justify-between gap-4">
+        <div>
+          <h3
+            className={clsx(
+              'font-semibold text-slate-950 dark:text-white',
+              compact ? 'text-base' : 'text-lg'
+            )}
+          >
+            实时预览
+          </h3>
+          <p
+            className={clsx(
+              'mt-1 text-slate-500 dark:text-slate-400',
+              compact ? 'text-xs leading-5' : 'text-sm'
+            )}
+          >
+            这里展示当前 clip-path 与背景组合后的最终效果，并按真实比例缩放显示。
+          </p>
+        </div>
+        <Badge>
+          {previewSize.width} × {previewSize.height}px
+        </Badge>
       </div>
 
-      {/* 预览容器 */}
       <div
-        className="relative overflow-hidden rounded-lg bg-white/5 shadow-sm dark:bg-black/5"
-        style={{ width, height }}
+        className={clsx(
+          'surface-panel relative w-full overflow-hidden rounded-[28px]',
+          compact ? 'p-3' : 'p-4 sm:p-5'
+        )}
       >
-        {/* 渲染预览内容 */}
-        {previewMode === 'svg' ? renderSvgPreview() : renderDivPreview()}
-      </div>
-
-      {/* 尺寸显示 */}
-      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        {width} × {height}px
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.12),transparent_58%)] dark:bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.12),transparent_58%)]" />
+        <div className="canvas-grid absolute inset-0 opacity-70 dark:opacity-50" />
+        <div
+          className={clsx(
+            'relative flex items-center justify-center rounded-[24px] border border-black/5 bg-[linear-gradient(135deg,rgba(255,255,255,0.86),rgba(241,245,249,0.7))] shadow-inner dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.9),rgba(2,6,23,0.72))]',
+            compact ? 'min-h-[260px] p-4' : 'min-h-[320px] p-6'
+          )}
+        >
+          <div className="flex w-full items-center justify-center">
+            <div
+              className="relative w-full max-w-[min(100%,360px)] overflow-hidden rounded-[22px] border border-white/70 shadow-[0_24px_60px_rgba(15,23,42,0.12)] dark:border-white/12 dark:shadow-[0_24px_60px_rgba(2,6,23,0.45)]"
+              style={{ aspectRatio }}
+            >
+              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.2),transparent_42%)] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_42%)]" />
+              <div className="relative h-full w-full bg-[linear-gradient(135deg,rgba(226,232,240,0.85),rgba(248,250,252,0.6))] dark:bg-[linear-gradient(135deg,rgba(30,41,59,0.92),rgba(15,23,42,0.75))]">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    ...backgroundStyle,
+                    clipPath,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

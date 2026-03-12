@@ -1,13 +1,13 @@
-import { Github, Home, Info } from 'lucide-react';
+import { ThemeProvider } from '@/components/theme-provider';
+import { withBasePath } from '@/lib/site';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CSS多边形编辑器',
-  description: '一款直观的CSS clip-path多边形编辑工具，帮助您轻松创建和编辑复杂的多边形形状',
-  keywords: 'CSS, clip-path, 多边形, 编辑器, 前端工具',
-  authors: [{ name: 'Polygon Editor Team' }],
+  title: 'CSS 多边形编辑器',
+  description: '可视化编辑 CSS clip-path polygon，支持实时预览与代码复制。',
+  keywords: 'CSS, clip-path, polygon, 多边形, editor',
+  authors: [{ name: 'crper' }],
 };
 
 type RootLayoutProps = {
@@ -16,52 +16,27 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
   return (
-    <html lang="zh-CN" className="scroll-smooth">
-      <body className="flex min-h-screen flex-col">
-        {/* 导航栏 */}
-        <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/80">
-          <div className="container mx-auto flex h-16 items-center justify-between px-4">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-xl font-bold">CSS多边形魔方</span>
-            </Link>
-
-            <nav className="flex items-center gap-4">
-              <Link
-                href="/"
-                className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-              >
-                <Home className="h-4 w-4" />
-                <span>首页</span>
-              </Link>
-              <Link
-                href="/about"
-                className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-              >
-                <Info className="h-4 w-4" />
-                <span>关于</span>
-              </Link>
-              <Link
-                href="https://github.com/crper/next-css-polygon-editor"
-                target="_blank"
-                className="flex items-center gap-1 rounded-md bg-gray-800 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
-              >
-                <Github className="h-4 w-4" />
-                <span>GitHub</span>
-              </Link>
-            </nav>
+    <html lang="zh-CN" className="scroll-smooth" suppressHydrationWarning>
+      <body className="min-h-screen bg-[radial-gradient(circle_at_top,#dbeafe,transparent_35%),linear-gradient(135deg,#f8fbff_0%,#eef2ff_45%,#f8fafc_100%)] text-slate-900 antialiased dark:bg-[radial-gradient(circle_at_top,#1d4ed8,transparent_25%),linear-gradient(135deg,#020617_0%,#0f172a_35%,#111827_100%)] dark:text-slate-50">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="pointer-events-none fixed inset-0 -z-20 opacity-40 dark:opacity-20">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-transparent dark:from-white/5" />
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url(${withBasePath('/grid-pattern.svg')})`,
+                backgroundPosition: 'center',
+              }}
+            />
           </div>
-        </header>
 
-        <main className="flex-grow">{children}</main>
-
-        {/* 页脚 */}
-        <footer className="border-t border-gray-200 py-6 dark:border-gray-800">
-          <div className="container mx-auto px-4 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>
-              © {new Date().getFullYear()} CSS多边形魔方 - 一款强大的CSS clip-path多边形编辑工具
-            </p>
-          </div>
-        </footer>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,75 +1,120 @@
 'use client';
 
-import { Point } from '@/hooks/usePolygon';
+import type { Point } from '@/components/polygon-editor/lib';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export interface VertexSettingsProps {
   points: Point[];
+  activePointIndex: number | null;
+  onSelectPoint: (index: number | null) => void;
   onUpdatePoint: (index: number, point: Point) => void;
   onResetPolygon: () => void;
 }
 
-export function VertexSettings({ points, onUpdatePoint, onResetPolygon }: VertexSettingsProps) {
+function clampPercentage(value: number) {
+  return Math.min(100, Math.max(0, value));
+}
+
+function VertexField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div>
+      <Label>{label}</Label>
+      <Input
+        type="number"
+        className="px-2 py-1 text-xs"
+        value={Number.isFinite(value) ? value : ''}
+        min={0}
+        max={100}
+        step={0.1}
+        onChange={event => {
+          const nextValue = Number.parseFloat(event.target.value);
+          if (!Number.isNaN(nextValue)) {
+            onChange(clampPercentage(nextValue));
+          }
+        }}
+      />
+    </div>
+  );
+}
+
+export function VertexSettings({
+  points,
+  activePointIndex,
+  onSelectPoint,
+  onUpdatePoint,
+  onResetPolygon,
+}: VertexSettingsProps) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-        {points.map((point, index) => (
-          <div
-            key={`point-${index}`}
-            className="rounded-md border border-gray-200 bg-white/10 p-2 shadow-sm dark:border-gray-700 dark:bg-black/10"
-          >
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-xs font-medium">顶点 {index + 1}</span>
-              <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                {index}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-1">
-              <div>
-                <label className="mb-1 block text-xs">X (%)</label>
-                <input
-                  type="number"
-                  className="w-full rounded border border-gray-300 bg-white/10 px-2 py-1 text-xs dark:border-gray-700 dark:bg-black/10"
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+        {points.map((point, index) => {
+          const active = activePointIndex === index;
+
+          return (
+            <button
+              key={`point-${index}`}
+              type="button"
+              onClick={() => onSelectPoint(index)}
+              className={
+                active
+                  ? 'surface-panel border-blue-500/40 bg-blue-50/70 p-3 text-left shadow-sm dark:border-blue-400/30 dark:bg-blue-500/10'
+                  : 'surface-panel p-3 text-left shadow-sm'
+              }
+            >
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                      顶点 {index + 1}
+                    </span>
+                    {active ? (
+                      <Badge className="bg-blue-600/10 text-blue-700 dark:bg-blue-400/10 dark:text-blue-200">
+                        当前
+                      </Badge>
+                    ) : null}
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    对应画布上的 P{index + 1}
+                  </p>
+                </div>
+                <Badge>
+                  {point.x.toFixed(1)}, {point.y.toFixed(1)}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2" onClick={event => event.stopPropagation()}>
+                <VertexField
+                  label="X (%)"
                   value={point.x}
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  onChange={e => {
-                    const value = parseFloat(e.target.value);
-                    if (!isNaN(value)) {
-                      onUpdatePoint(index, { ...point, x: value });
-                    }
-                  }}
+                  onChange={value => onUpdatePoint(index, { ...point, x: value })}
                 />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs">Y (%)</label>
-                <input
-                  type="number"
-                  className="w-full rounded border border-gray-300 bg-white/10 px-2 py-1 text-xs dark:border-gray-700 dark:bg-black/10"
+                <VertexField
+                  label="Y (%)"
                   value={point.y}
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  onChange={e => {
-                    const value = parseFloat(e.target.value);
-                    if (!isNaN(value)) {
-                      onUpdatePoint(index, { ...point, y: value });
-                    }
-                  }}
+                  onChange={value => onUpdatePoint(index, { ...point, y: value })}
                 />
               </div>
-            </div>
-          </div>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="flex justify-end">
-        <button
-          onClick={onResetPolygon}
-          className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-        >
-          重置多边形
-        </button>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
+          点击任意卡片即可与画布中的顶点高亮联动，表单修改会即时回填到画布。
+        </p>
+        <Button onClick={onResetPolygon}>重置多边形</Button>
       </div>
     </div>
   );

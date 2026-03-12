@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -21,12 +23,15 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-
-    /* 新增磨砂玻璃效果变量 */
-    --glass-bg: 0 0% 100%;
-    --glass-border: 210 40% 98%;
-    --glass-blur: 10px;
-    --glass-opacity: 0.7;
+    --editor-accent: rgba(37, 99, 235, 0.88);
+    --editor-fill-start: rgba(59, 130, 246, 0.24);
+    --editor-fill-end: rgba(139, 92, 246, 0.18);
+    --editor-shadow: rgba(59, 130, 246, 0.22);
+    --editor-edge: rgba(59, 130, 246, 0.46);
+    --editor-edge-hover: rgba(37, 99, 235, 0.88);
+    --editor-edge-hit: rgba(59, 130, 246, 0.001);
+    --canvas-grid-minor: rgba(148, 163, 184, 0.12);
+    --canvas-grid-major: rgba(99, 102, 241, 0.12);
   }
 
   .dark {
@@ -49,90 +54,112 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
-
-    /* 深色模式磨砂玻璃效果变量 */
-    --glass-bg: 222.2 84% 4.9%;
-    --glass-border: 217.2 32.6% 17.5%;
-    --glass-blur: 10px;
-    --glass-opacity: 0.8;
+    --editor-accent: rgba(147, 197, 253, 0.92);
+    --editor-fill-start: rgba(96, 165, 250, 0.24);
+    --editor-fill-end: rgba(167, 139, 250, 0.2);
+    --editor-shadow: rgba(37, 99, 235, 0.32);
+    --editor-edge: rgba(147, 197, 253, 0.54);
+    --editor-edge-hover: rgba(191, 219, 254, 0.92);
+    --editor-edge-hit: rgba(191, 219, 254, 0.001);
+    --canvas-grid-minor: rgba(148, 163, 184, 0.12);
+    --canvas-grid-major: rgba(96, 165, 250, 0.12);
   }
-}
 
-@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-blue-950;
     color: hsl(var(--foreground));
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    transition-property: background-color, color;
-    transition-duration: 300ms;
+    transition:
+      background-color 200ms ease,
+      color 200ms ease,
+      border-color 200ms ease;
   }
 
-  main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding-top: 4rem; /* 为固定导航条腾出空间 */
+  img {
+    display: block;
   }
 }
 
-/* 平滑滚动和过渡效果 */
-html {
-  scroll-behavior: smooth;
+@layer components {
+  .editor-workspace-shell {
+    min-height: 0;
+  }
+
+  .surface-card {
+    @apply rounded-3xl border border-black/5 bg-white/72 shadow-lg shadow-slate-950/5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/20;
+  }
+
+  .surface-panel {
+    @apply rounded-2xl border border-black/5 bg-white/80 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[0.06];
+  }
+
+  .surface-soft {
+    @apply rounded-2xl border border-black/5 bg-white/50 backdrop-blur dark:border-white/10 dark:bg-white/[0.04];
+  }
+
+  .surface-chip {
+    @apply rounded-full border border-black/5 bg-white/80 text-slate-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300;
+  }
+
+  .surface-input {
+    @apply w-full rounded-xl border border-black/8 bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-400/60 focus:ring-2 focus:ring-blue-500/15 dark:border-white/10 dark:bg-black/10 dark:text-slate-50 dark:focus:border-blue-400/50 dark:focus:ring-blue-400/20;
+  }
+
+  .surface-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-black/5 bg-white/85 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-200 dark:hover:bg-white/[0.1] dark:hover:text-white;
+  }
+
+  .surface-button-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100;
+  }
+
+  .surface-button-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600/90 px-3 py-2 text-sm font-medium text-white transition hover:bg-rose-500 dark:bg-rose-500 dark:hover:bg-rose-400;
+  }
+
+  .surface-code {
+    @apply overflow-hidden rounded-2xl border border-black/5 bg-slate-950 text-white dark:border-white/10 dark:bg-slate-950;
+  }
+
+  .canvas-grid {
+    background-image:
+      linear-gradient(var(--canvas-grid-minor) 1px, transparent 1px),
+      linear-gradient(90deg, var(--canvas-grid-minor) 1px, transparent 1px),
+      linear-gradient(var(--canvas-grid-major) 1px, transparent 1px),
+      linear-gradient(90deg, var(--canvas-grid-major) 1px, transparent 1px);
+    background-position: -1px -1px;
+    background-size: 24px 24px, 24px 24px, 96px 96px, 96px 96px;
+  }
 }
 
-/* 自定义滚动条 */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(107, 114, 128, 0.3);
-  border-radius: 4px;
-  transition: background 0.2s ease;
+  background: rgba(100, 116, 139, 0.35);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(107, 114, 128, 0.5);
+  background: rgba(100, 116, 139, 0.55);
 }
 
-/* 字体平滑 */
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* 磨砂玻璃效果辅助类 */
-.glass {
-  background: rgba(var(--glass-bg), var(--glass-opacity));
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid rgba(var(--glass-border), 0.1);
-}
-
-/* 卡片悬停效果 */
-.hover-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-}
-
-/* 渐变文本效果 */
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-500;
+  @apply bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent;
 }
 
-/* 深色模式优化 */
-.dark img {
-  filter: brightness(0.9);
+@supports (padding: max(0px)) {
+  .editor-workspace-shell {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
 }

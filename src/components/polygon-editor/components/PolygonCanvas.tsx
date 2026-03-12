@@ -1,189 +1,253 @@
 'use client';
 
-import { Point } from '@/hooks/usePolygon';
+import {
+  getEdges,
+  getPointFromRect,
+  isPointNearExistingPoint,
+  nudgePoint,
+  serializeClipPath,
+  type Point,
+} from '@/components/polygon-editor/lib';
+import { Badge } from '@/components/ui/badge';
 import { useFullscreen } from 'ahooks';
-import { Maximize2, Minimize2 } from 'lucide-react';
-import { MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react';
+import clsx from 'clsx';
+import { Maximize2, Minimize2, Trash2 } from 'lucide-react';
+import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { PolygonEdge, PolygonRenderer, PolygonVertex } from './render';
 
-/**
- * 多边形画布组件属性
- */
 export interface PolygonCanvasProps {
   points: Point[];
   activePointIndex: number | null;
   isDragging: boolean;
+  onSelectPoint: (index: number | null) => void;
   onPointDragStart: (index: number) => void;
   onPointDragEnd: () => void;
   onPointMove: (point: Point) => void;
   onPointAdd: (point: Point, insertIndex?: number) => void;
   onPointRemove: (index: number) => void;
+  onPointNudge?: (index: number, point: Point) => void;
+  className?: string;
+  stageClassName?: string;
 }
 
-/**
- * 多边形画布组件
- * 提供可视化编辑多边形顶点的功能
- */
 export function PolygonCanvas({
   points,
   activePointIndex,
   isDragging,
+  onSelectPoint,
   onPointDragStart,
   onPointDragEnd,
   onPointMove,
   onPointAdd,
   onPointRemove,
+  onPointNudge,
+  className,
+  stageClassName,
 }: PolygonCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
-  // 使用ahooks的useFullscreen钩子
   const [isFullscreen, { toggleFullscreen }] = useFullscreen(canvasRef);
+  const pointerIdRef = useRef<number | null>(null);
 
-  // 计算多边形的边线
-  const edges = useMemo(() => {
-    if (points.length < 2) return [];
+  const edges = useMemo(() => getEdges(points), [points]);
 
-    return points.map((point, index) => {
-      const nextIndex = (index + 1) % points.length;
-      const nextPoint = points[nextIndex];
-      return {
-        start: point,
-        end: nextPoint,
-        index,
-      };
-    });
-  }, [points]);
-
-  // 处理边线点击事件 - 在边线上添加新顶点
   const handleEdgeClick = useCallback(
-    (e: MouseEvent<SVGLineElement>, edgeIndex: number, clickPoint: Point) => {
-      if (isDragging) return;
+    (event: MouseEvent<SVGLineElement>, edgeIndex: number, clickPoint: Point) => {
+      event.stopPropagation();
 
-      // 检查是否点击了已有的点附近
-      const clickedNearPoint = points.some(point => {
-        const distance = Math.sqrt(
-          Math.pow(point.x - clickPoint.x, 2) + Math.pow(point.y - clickPoint.y, 2)
-        );
-        return distance < 5; // 5%的容差范围
-      });
+      if (isDragging || isPointNearExistingPoint(points, clickPoint)) {
+        return;
+      }
 
-      if (clickedNearPoint) return;
-
-      // 在边的终点索引位置插入新点（考虑到数组循环）
       const insertIndex = (edgeIndex + 1) % points.length;
-      // 使用addPoint函数，传入insertIndex参数
       onPointAdd(clickPoint, insertIndex);
+      onSelectPoint(insertIndex);
     },
-    [isDragging, points, onPointAdd]
+    [isDragging, onPointAdd, onSelectPoint, points]
   );
 
-  // 处理画布点击事件 - 仅处理初始化时的点击
   const handleCanvasClick = useCallback(
-    (e: MouseEvent<HTMLDivElement>) => {
-      if (!canvasRef.current || isDragging) return;
-
-      // 只有当没有点时，才允许直接点击画布添加点
-      if (points.length === 0) {
-        const rect = canvasRef.current.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        onPointAdd({ x, y });
+    (event: MouseEvent<HTMLDivElement>) => {
+      if (!canvasRef.current || isDragging) {
+        return;
       }
+
+      if (points.length === 0) {
+        onPointAdd(
+          getPointFromRect(canvasRef.current.getBoundingClientRect(), event.clientX, event.clientY)
+        );
+        return;
+      }
+
+      onSelectPoint(null);
     },
-    [canvasRef, isDragging, points.length, onPointAdd]
+    [isDragging, onPointAdd, onSelectPoint, points.length]
   );
 
-  // 处理鼠标移动事件 - 拖拽顶点
-  useEffect(() => {
-    const handleMouseMove = (e: globalThis.MouseEvent) => {
-      if (!isDragging || activePointIndex === null || !canvasRef.current) return;
-
-      const rect = canvasRef.current.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-      // 确保坐标在0-100范围内
-      const clampedX = Math.max(0, Math.min(100, x));
-      const clampedY = Math.max(0, Math.min(100, y));
-
-      // 使用requestAnimationFrame优化拖拽性能
-      requestAnimationFrame(() => {
-        onPointMove({ x: clampedX, y: clampedY });
-      });
-    };
-
-    const handleMouseUp = () => {
-      if (isDragging) {
-        onPointDragEnd();
+  const handleVertexPointerDown = useCallback(
+    (event: PointerEvent<HTMLDivElement>, index: number) => {
+      if (!canvasRef.current) {
+        return;
       }
-    };
 
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove, { passive: true }); // 添加passive标志提高性能
-      window.addEventListener('mouseup', handleMouseUp);
-    }
+      event.preventDefault();
+      event.stopPropagation();
+      pointerIdRef.current = event.pointerId;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      onPointDragStart(index);
+    },
+    [onPointDragStart]
+  );
 
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, activePointIndex, onPointMove, onPointDragEnd]);
+  const handlePointerMove = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (!isDragging || pointerIdRef.current !== event.pointerId || !canvasRef.current) {
+        return;
+      }
 
-  // 处理顶点右键点击 - 删除顶点
+      onPointMove(
+        getPointFromRect(canvasRef.current.getBoundingClientRect(), event.clientX, event.clientY)
+      );
+    },
+    [isDragging, onPointMove]
+  );
+
+  const handlePointerEnd = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (pointerIdRef.current !== event.pointerId) {
+        return;
+      }
+
+      pointerIdRef.current = null;
+      onPointDragEnd();
+    },
+    [onPointDragEnd]
+  );
+
   const handlePointContextMenu = useCallback(
-    (e: MouseEvent<HTMLDivElement>, index: number) => {
-      e.preventDefault();
+    (event: MouseEvent<HTMLDivElement>, index: number) => {
+      event.preventDefault();
       onPointRemove(index);
     },
     [onPointRemove]
   );
 
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if (activePointIndex === null || !onPointNudge) {
+        return;
+      }
+
+      const step = event.shiftKey ? 10 : event.altKey ? 0.5 : 1;
+      const currentPoint = points[activePointIndex];
+
+      if (!currentPoint) {
+        return;
+      }
+
+      switch (event.key) {
+        case 'ArrowUp':
+          event.preventDefault();
+          onPointNudge(activePointIndex, nudgePoint(currentPoint, 0, -step));
+          break;
+        case 'ArrowDown':
+          event.preventDefault();
+          onPointNudge(activePointIndex, nudgePoint(currentPoint, 0, step));
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          onPointNudge(activePointIndex, nudgePoint(currentPoint, -step, 0));
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          onPointNudge(activePointIndex, nudgePoint(currentPoint, step, 0));
+          break;
+        case 'Backspace':
+        case 'Delete':
+          event.preventDefault();
+          onPointRemove(activePointIndex);
+          break;
+        default:
+          break;
+      }
+    },
+    [activePointIndex, onPointNudge, onPointRemove, points]
+  );
+
   return (
-    <div className="w-full">
+    <div className={clsx('flex h-full min-h-0 w-full flex-col', className)}>
       <div
         ref={canvasRef}
-        className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900' : 'h-[400px] w-full'} group cursor-crosshair rounded-lg border-2 border-gray-300 bg-white/10 backdrop-blur-sm transition-all duration-300 hover:border-blue-400 dark:border-gray-700 dark:bg-black/10 dark:hover:border-blue-600`}
+        className={clsx(
+          'group relative min-h-[420px] flex-1 overflow-hidden rounded-[26px] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(248,250,252,0.78))] shadow-[0_20px_50px_rgba(15,23,42,0.08)] transition-all duration-300 outline-none dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.78))]',
+          'hover:border-blue-400/40 dark:hover:border-blue-400/30',
+          stageClassName,
+          isFullscreen ? 'fixed inset-0 z-50 min-h-screen rounded-none' : 'w-full'
+        )}
         onClick={handleCanvasClick}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        style={{ touchAction: 'none' }}
       >
-        {/* 全屏切换按钮 */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.14),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.14),transparent_55%)]" />
+        <div className="canvas-grid absolute inset-0 opacity-80 dark:opacity-60" />
+        <div className="absolute inset-[10px] rounded-[20px] border border-white/70 shadow-inner dark:border-white/8" />
+        <div className="pointer-events-none absolute inset-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-24px_50px_rgba(15,23,42,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03),inset_0_-24px_50px_rgba(2,6,23,0.34)]" />
+
+        <div className="absolute left-3 top-3 z-20 flex max-w-[calc(100%-5rem)] flex-wrap items-center gap-2">
+          {activePointIndex !== null ? (
+            <>
+              <Badge>已选中顶点 {activePointIndex + 1}</Badge>
+              <button
+                onClick={event => {
+                  event.stopPropagation();
+                  onPointRemove(activePointIndex);
+                }}
+                className="surface-button-danger px-3 py-1.5"
+              >
+                <Trash2 size={16} />
+                删除顶点
+              </button>
+            </>
+          ) : (
+            <Badge>点击顶点选中，点击边线或中点 + handle 在线段上插入新顶点</Badge>
+          )}
+        </div>
+
         <button
-          onClick={e => {
-            e.stopPropagation(); // 阻止事件冒泡，避免触发画布点击事件
+          onClick={event => {
+            event.stopPropagation();
             toggleFullscreen();
           }}
-          className="absolute top-2 right-2 z-10 rounded-md bg-gray-800/70 p-1.5 text-white transition-colors hover:bg-gray-700"
+          className="surface-button absolute right-3 top-3 z-20 rounded-full p-2"
           aria-label={isFullscreen ? '退出全屏' : '进入全屏'}
           title={isFullscreen ? '退出全屏' : '进入全屏'}
         >
           {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
         </button>
 
-        {/* 使用div渲染多边形，替代SVG实现 */}
-        <PolygonRenderer points={points} isActive={true} />
+        <PolygonRenderer clipPath={serializeClipPath(points)} isActive={true} />
 
-        {/* 渲染多边形边线 */}
         <svg className="absolute inset-0 h-full w-full">
           {edges.map(edge => (
             <PolygonEdge key={`edge-${edge.index}`} {...edge} onEdgeClick={handleEdgeClick} />
           ))}
         </svg>
 
-        {/* 绘制顶点 */}
         {points.map((point, index) => (
           <PolygonVertex
             key={`vertex-${index}`}
             point={point}
             index={index}
             isActive={activePointIndex === index}
-            onDragStart={onPointDragStart}
+            showLabel={activePointIndex === index || points.length > 6}
+            onPointerDown={handleVertexPointerDown}
             onContextMenu={handlePointContextMenu}
           />
         ))}
-      </div>
-
-      <div className="mt-4 space-y-4">
-        <div className="text-sm text-gray-500 dark:text-gray-400">
-          <p>点击画布添加顶点 | 拖拽顶点移动 | 右键点击顶点删除 | 点击预设形状快速创建</p>
-        </div>
       </div>
     </div>
   );
