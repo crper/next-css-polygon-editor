@@ -15,14 +15,14 @@ function clampSize(value: number) {
 
 export function SizeSettings({ width, height, onChange }: SizeSettingsProps) {
   return (
-    <div>
-      <div className="mb-3 flex items-center justify-between gap-3">
+    <div className="space-y-4">
+      <div className="space-y-1.5">
         <h4 className="text-sm font-medium">预览尺寸</h4>
-        <p className="max-w-[16rem] text-right text-xs leading-5 text-slate-500 dark:text-slate-400">
+        <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
           输入宽高后，预览会立即更新。支持 50–1000 px。
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="inspector-grid inspector-grid-2">
         <div>
           <Label>宽度 (px)</Label>
           <Input

@@ -10,10 +10,10 @@ export interface BackgroundSettingsProps {
 
 export function BackgroundSettings({ backgroundImage, onChange }: BackgroundSettingsProps) {
   return (
-    <div className="space-y-3">
-      <div>
+    <div className="space-y-4">
+      <div className="space-y-1.5">
         <h4 className="text-sm font-medium">背景图片</h4>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
           填写图片 URL 后，预览与导出的 CSS 背景都会优先使用图片；留空时会回退到渐变或默认背景。
         </p>
       </div>

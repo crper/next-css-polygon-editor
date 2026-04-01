@@ -5,7 +5,15 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { serializeClipPath, usePolygon } from '@/hooks/usePolygon';
 import clsx from 'clsx';
-import { ChevronDown, ChevronUp, Code2, Eye, Layers3, Settings2 } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Code2,
+  Eye,
+  Layers3,
+  Settings2,
+  type LucideIcon,
+} from 'lucide-react';
 import { useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { CodeToolbar } from './components/CodeToolbar';
@@ -42,8 +50,8 @@ const inspectorTabs: Array<{ value: InspectorTab; label: string }> = [
   { value: 'export', label: '导出' },
 ];
 
-const MOBILE_SHEET_PEEK = 84;
-const MOBILE_SHEET_DRAG_THRESHOLD = 44;
+const MOBILE_SHEET_PEEK = 112;
+const MOBILE_SHEET_DRAG_THRESHOLD = 48;
 
 function InspectorSection({
   title,
@@ -55,12 +63,12 @@ function InspectorSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="surface-soft space-y-3 rounded-[20px] p-3.5">
-      <div className="space-y-1">
+    <section className="surface-soft space-y-4 rounded-[22px] p-4">
+      <div className="space-y-1.5">
         <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
-        <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">{description}</p>
+        <p className="text-xs leading-6 text-slate-500 dark:text-slate-400">{description}</p>
       </div>
-      <Separator />
+      <Separator className="bg-black/5 dark:bg-white/10" />
       {children}
     </section>
   );
@@ -80,16 +88,38 @@ function InspectorShell({
   return (
     <div
       className={clsx(
-        'surface-card flex h-full min-h-0 flex-col overflow-hidden rounded-[24px] p-2.5 sm:p-3',
+        'surface-card flex h-full min-h-0 flex-col overflow-hidden rounded-[26px] p-3 sm:p-3.5',
         className
       )}
     >
-      <div className="mb-2.5 space-y-1 px-0.5">
-        <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{title}</h2>
-        <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">{description}</p>
+      <div className="mb-3 space-y-1.5 px-1">
+        <h2 className="text-[15px] font-semibold text-slate-950 dark:text-white">{title}</h2>
+        <p className="text-xs leading-6 text-slate-500 dark:text-slate-400">{description}</p>
       </div>
-      <Separator className="mb-2.5" />
-      <div className="min-h-0 flex-1">{children}</div>
+      <Separator className="mb-3 bg-black/5 dark:bg-white/10" />
+      <div className="inspector-content-shell min-h-0 flex-1">{children}</div>
+    </div>
+  );
+}
+
+function WorkspaceHint({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="workspace-hint-chip">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-700 dark:bg-blue-400/10 dark:text-blue-200">
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-slate-900 dark:text-white">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{description}</p>
+      </div>
     </div>
   );
 }
@@ -119,14 +149,14 @@ function InspectorContent({
     <Tabs
       value={activeTab}
       onValueChange={value => onTabChange(value as InspectorTab)}
-      className={clsx('flex min-h-0 flex-1 flex-col gap-2.5', rootClassName)}
+      className={clsx('flex min-h-0 flex-1 flex-col gap-3', rootClassName)}
     >
-      <TabsList className="grid w-full grid-cols-4 gap-1.5 rounded-[18px] p-1.5">
+      <TabsList className="grid w-full grid-cols-2 gap-1.5 rounded-[20px] p-1.5 sm:grid-cols-4">
         {inspectorTabs.map(tab => (
           <TabsTrigger
             key={tab.value}
             value={tab.value}
-            className="px-2.5 py-2 text-[13px] sm:text-sm"
+            className="min-h-10 px-3 py-2 text-[13px] sm:text-sm"
           >
             {tab.label}
           </TabsTrigger>
@@ -134,10 +164,10 @@ function InspectorContent({
       </TabsList>
 
       <div
-        className={clsx('min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1', bodyClassName)}
+        className={clsx('min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5', bodyClassName)}
       >
         <TabsContent value="shape" className="mt-0 data-[state=inactive]:hidden">
-          <div className="space-y-2.5 pb-1">
+          <div className="space-y-3 pb-2">
             <InspectorSection
               title="形状与顶点"
               description="先选一个基础形状，再微调选中的顶点，画布和输入会同步更新。"
@@ -169,7 +199,7 @@ function InspectorContent({
         </TabsContent>
 
         <TabsContent value="size" className="mt-0 data-[state=inactive]:hidden">
-          <div className="space-y-2.5 pb-1">
+          <div className="space-y-3 pb-2">
             <InspectorSection
               title="尺寸"
               description="直接输入宽高，预览会立即按新尺寸更新，方便确认最终占位。"
@@ -195,7 +225,7 @@ function InspectorContent({
         </TabsContent>
 
         <TabsContent value="style" className="mt-0 data-[state=inactive]:hidden">
-          <div className="space-y-2.5 pb-1">
+          <div className="space-y-3 pb-2">
             <InspectorSection
               title="背景图"
               description="输入背景图 URL，立即查看图形裁切后的最终效果。"
@@ -225,7 +255,7 @@ function InspectorContent({
         </TabsContent>
 
         <TabsContent value="export" className="mt-0 data-[state=inactive]:hidden">
-          <div className="space-y-2.5 pb-1">
+          <div className="space-y-3 pb-2">
             <InspectorSection
               title="导出代码"
               description="确认预览无误后，再复制 polygon 值或完整 CSS 代码。"
@@ -249,6 +279,12 @@ export function PolygonEditor({ className = '' }: PolygonEditorProps) {
   const suppressSheetClickRef = useRef(false);
 
   const clipPath = useMemo(() => serializeClipPath(editor.points), [editor.points]);
+  const activeTabLabel =
+    inspectorTabs.find(tab => tab.value === activeTab)?.label ?? inspectorTabs[0].label;
+  const selectedPointLabel =
+    editor.activePointIndex === null
+      ? '当前还没有选中顶点'
+      : `P${editor.activePointIndex + 1} 已被选中`;
 
   const handleGradientFieldChange = (
     field: 'enabled' | 'direction' | 'type',
@@ -378,45 +414,74 @@ export function PolygonEditor({ className = '' }: PolygonEditorProps) {
     : `translateY(calc(100% - ${MOBILE_SHEET_PEEK}px + ${Math.min(0, mobileSheetDragOffset)}px))`;
 
   return (
-    <div
-      className={clsx('relative flex h-full min-h-0 w-full flex-col gap-2.5 lg:gap-3', className)}
-    >
+    <div className={clsx('relative flex h-full min-h-0 w-full flex-col gap-3 lg:gap-4', className)}>
       <Toaster position="top-center" reverseOrder={false} />
 
-      <div className="surface-panel flex flex-wrap items-center justify-between gap-2.5 px-3 py-2.5 sm:px-3.5">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
-            <Layers3 className="h-4 w-4 text-blue-600 dark:text-blue-300" />
-            <span>Polygon Workspace</span>
+      <section className="surface-card relative overflow-hidden rounded-[28px] p-4 sm:p-5 lg:p-6">
+        <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.16),transparent_70%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(96,165,250,0.18),transparent_70%)]" />
+
+        <div className="relative grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(320px,360px)] xl:items-start">
+          <div className="space-y-4">
+            <Badge className="w-fit bg-blue-500/10 text-blue-700 dark:bg-blue-400/10 dark:text-blue-200">
+              <Layers3 className="h-3.5 w-3.5" />
+              clip-path polygon() workspace
+            </Badge>
+
+            <div className="space-y-2">
+              <h1 className="text-lg font-semibold tracking-tight text-slate-950 sm:text-[1.625rem] dark:text-white">
+                画布优先的 Polygon Workspace
+              </h1>
+              <p className="max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300">
+                拖点、插点、预览与导出被整理成一条更短的工作路径：中央画布负责编辑， Inspector
+                只做参数和输出，不再抢主舞台。
+              </p>
+            </div>
           </div>
-          <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
-            画布是主要操作区，Inspector 按形状、尺寸、样式和导出分组整理设置。
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge>{editor.points.length} 个顶点</Badge>
-          <Badge>
-            {editor.document.previewSize.width} × {editor.document.previewSize.height}
-          </Badge>
-        </div>
-      </div>
+          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+            <div className="workspace-stat">
+              <p className="workspace-stat-label">编辑状态</p>
+              <p className="workspace-stat-value">{editor.points.length} 个顶点</p>
+              <p className="workspace-stat-note">{selectedPointLabel}</p>
+            </div>
 
-      <div className="relative flex min-h-0 flex-1 gap-2.5 lg:gap-3">
-        <section className="flex min-h-0 min-w-0 flex-1 flex-col pb-[88px] lg:pb-0">
-          <div className="surface-soft mb-2.5 flex flex-wrap items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300">
-            <Badge className="bg-white/80 dark:bg-white/[0.06]">
-              <Settings2 className="h-3.5 w-3.5" />
-              点击顶点即可选中
-            </Badge>
-            <Badge className="bg-white/80 dark:bg-white/[0.06]">
-              <Eye className="h-3.5 w-3.5" />
-              点击边线可新增顶点
-            </Badge>
-            <Badge className="bg-white/80 dark:bg-white/[0.06]">
-              <Code2 className="h-3.5 w-3.5" />
-              Delete 删除，方向键微调位置
-            </Badge>
+            <div className="workspace-stat">
+              <p className="workspace-stat-label">预览尺寸</p>
+              <p className="workspace-stat-value">
+                {editor.document.previewSize.width} × {editor.document.previewSize.height}
+              </p>
+              <p className="workspace-stat-note">实时预览与导出代码会同步引用这组尺寸。</p>
+            </div>
+
+            <div className="workspace-stat">
+              <p className="workspace-stat-label">当前面板</p>
+              <p className="workspace-stat-value">{activeTabLabel}</p>
+              <p className="workspace-stat-note">
+                Inspector 已按形状、尺寸、样式和导出四段整理信息。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="relative flex min-h-0 flex-1 gap-3 lg:gap-4">
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 pb-[120px] lg:pb-0">
+          <div className="grid gap-2.5 sm:grid-cols-2 2xl:grid-cols-3">
+            <WorkspaceHint
+              icon={Settings2}
+              title="点击即可选点"
+              description="选中后可直接拖动，也能在 Inspector 中精确输入 X / Y。"
+            />
+            <WorkspaceHint
+              icon={Eye}
+              title="边线可继续插点"
+              description="在现有边线上点击，就能快速补新顶点扩展多边形结构。"
+            />
+            <WorkspaceHint
+              icon={Code2}
+              title="键盘辅助微调"
+              description="Delete 删除当前点，方向键移动位置，Shift 可加大步长。"
+            />
           </div>
 
           <div className="min-h-0 flex-1">
@@ -436,7 +501,7 @@ export function PolygonEditor({ className = '' }: PolygonEditorProps) {
           </div>
         </section>
 
-        <aside className="hidden h-full w-[392px] shrink-0 lg:block xl:w-[428px]">
+        <aside className="hidden h-full w-[392px] shrink-0 lg:block xl:w-[420px]">
           <InspectorShell
             title="Inspector"
             description="所有设置集中在一个侧边面板里，方便边调整边查看画布。"
@@ -463,10 +528,10 @@ export function PolygonEditor({ className = '' }: PolygonEditorProps) {
         ) : null}
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 lg:hidden">
-          <div className="pointer-events-auto mx-2">
+          <div className="pointer-events-auto mx-2 sm:mx-3">
             <div
               className={clsx(
-                'flex h-[min(80dvh,680px)] max-h-[calc(100dvh-0.5rem)] min-h-[420px] flex-col overflow-hidden rounded-t-[26px] border border-black/8 bg-white/96 shadow-[0_-18px_48px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/96',
+                'flex h-[min(82dvh,720px)] max-h-[calc(100dvh-0.5rem)] min-h-[460px] flex-col overflow-hidden rounded-t-[28px] border border-black/8 bg-white/96 shadow-[0_-18px_48px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/96',
                 mobileSheetDragging
                   ? 'transition-none'
                   : 'transition-transform duration-280 ease-out'
@@ -479,7 +544,7 @@ export function PolygonEditor({ className = '' }: PolygonEditorProps) {
               <div className="relative flex min-h-0 flex-1 flex-col">
                 <button
                   type="button"
-                  className="flex items-start justify-between gap-3 border-b border-black/5 px-3 py-2.5 text-left dark:border-white/10"
+                  className="flex items-start justify-between gap-3 border-b border-black/5 px-3.5 pb-3 pt-3 text-left dark:border-white/10"
                   style={{ touchAction: 'none' }}
                   onPointerDown={handleMobileSheetPointerDown}
                   onPointerMove={handleMobileSheetPointerMove}
@@ -491,23 +556,29 @@ export function PolygonEditor({ className = '' }: PolygonEditorProps) {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="mb-2 flex justify-center">
-                      <div className="h-1.5 w-11 rounded-full bg-slate-300 dark:bg-slate-700" />
+                      <div className="h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-700" />
                     </div>
-                    <p className="text-sm font-semibold text-slate-950 dark:text-white">
-                      Inspector
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                      点击或拖动把手，即可在底部面板中展开设置和导出选项。
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-950 dark:text-white">
+                        Inspector
+                      </p>
+                      <Badge className="bg-white/70 dark:bg-white/[0.06]">{activeTabLabel}</Badge>
+                      <Badge className="bg-white/70 dark:bg-white/[0.06]">
+                        {editor.points.length} 个顶点
+                      </Badge>
+                    </div>
+                    <p className="mt-1.5 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                      点击或拖动把手展开设置，移动端保持和桌面端一致的信息结构。
                     </p>
                   </div>
                   {mobileInspectorOpen ? (
-                    <ChevronDown className="mt-5 h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
+                    <ChevronDown className="mt-6 h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
                   ) : (
-                    <ChevronUp className="mt-5 h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
+                    <ChevronUp className="mt-6 h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
                   )}
                 </button>
 
-                <div className="min-h-0 flex-1 overflow-hidden px-2.5 pb-2.5 pt-2">
+                <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2.5">
                   <InspectorContent
                     activeTab={activeTab}
                     onTabChange={setActiveTab}

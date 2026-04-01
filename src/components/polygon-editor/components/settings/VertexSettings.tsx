@@ -57,7 +57,7 @@ export function VertexSettings({
 }: VertexSettingsProps) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="inspector-grid inspector-grid-2">
         {points.map((point, index) => {
           const active = activePointIndex === index;
 
@@ -93,7 +93,7 @@ export function VertexSettings({
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-2 gap-2" onClick={event => event.stopPropagation()}>
+              <div className="grid grid-cols-2 gap-2.5" onClick={event => event.stopPropagation()}>
                 <VertexField
                   label="X (%)"
                   value={point.x}
@@ -110,11 +110,13 @@ export function VertexSettings({
         })}
       </div>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="inspector-actions inspector-actions-row">
         <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
           点击任意卡片即可与画布中的顶点高亮联动，表单修改会立即同步到画布。
         </p>
-        <Button onClick={onResetPolygon}>重置为默认多边形</Button>
+        <Button className="w-full sm:w-auto" onClick={onResetPolygon}>
+          重置为默认多边形
+        </Button>
       </div>
     </div>
   );

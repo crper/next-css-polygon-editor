@@ -67,8 +67,8 @@ function GradientTypeSelector({
   onChange: (value: GradientSettingsValue['type']) => void;
 }) {
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-3">
+    <div className="space-y-3">
+      <div className="inspector-actions">
         <div>
           <h5 className="text-sm font-medium">渐变类型</h5>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -135,7 +135,7 @@ function ColorStopCard({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="surface-panel space-y-2 p-3">
+    <div className="surface-panel space-y-2.5 p-3.5">
       <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
         <span>颜色 {index + 1}</span>
         <Badge>{color}</Badge>
@@ -157,7 +157,7 @@ function ColorStopCard({
 
 function GradientSummary({ type, direction, colors }: GradientSettingsValue) {
   return (
-    <div className="surface-soft flex items-center gap-3 rounded-2xl p-3">
+    <div className="surface-soft flex items-start gap-3 rounded-2xl p-3.5">
       <div
         className="h-12 w-16 shrink-0 rounded-xl border border-white/50 shadow-sm dark:border-white/10"
         style={{ background: getGradientPreviewBackground(type, colors) }}
@@ -193,8 +193,8 @@ export function GradientSettings({
   const safeDirection = getSafeDirection(settings.type, settings.direction);
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
+    <div className="space-y-4">
+      <div className="inspector-actions inspector-actions-row">
         <div>
           <h4 className="text-sm font-medium">渐变背景</h4>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -209,7 +209,7 @@ export function GradientSettings({
       </div>
 
       {settings.enabled ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <GradientSummary {...settings} direction={safeDirection} />
           <GradientTypeSelector type={settings.type} onChange={onGradientTypeChange} />
           <GradientDirectionField
@@ -219,7 +219,7 @@ export function GradientSettings({
           />
           <div className="space-y-2">
             <Label>渐变颜色</Label>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="inspector-grid inspector-grid-2 inspector-grid-3">
               {settings.colors.map((color, index) => (
                 <ColorStopCard
                   key={index}
